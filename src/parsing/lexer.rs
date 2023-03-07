@@ -40,6 +40,12 @@ fn digit<'a>( input : &mut CharIndices<'a> ) -> Result<(usize, char), ParseError
 }
 
 fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+    struct Digits {
+        start : usize,
+        end : usize,
+        digits : Vec<char>,
+    }
+    struct Last(usize);
     fn sign<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
             x <= any;
@@ -47,7 +53,7 @@ fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
             select x
         })
     }
-    fn one_or_more_digits<'a>(input : &mut CharIndices<'a>) -> Result<(usize, Vec<char>), ParseError> {
+    fn one_or_more_digits<'a>(input : &mut CharIndices<'a>) -> Result<Digits, ParseError> {
         parser!(input => {
             d <= ! digit;
             ds <= * digit;
@@ -55,19 +61,21 @@ fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
                 let last = ds.last().map_or(d.0, |l| l.0);
                 let mut digits = ds.into_iter().map(|x| x.1).collect::<Vec<_>>();
                 digits.insert(0, d.1);
-                (last, digits)
+                Digits { start : d.0, end : last, digits }
             }
         })
     }
-    fn decimal<'a>(input : &mut CharIndices<'a>) -> Result<(usize, Vec<char>), ParseError> {
+    fn decimal<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
         parser!(input => {
             dot <= any;
             where dot.1 == '.';
             ds <= one_or_more_digits;
-            select ds
+            let cs = ds.digits; 
+            let last = Last(ds.end);
+            select (last, cs) 
         })
     }
-    fn scientific_notation<'a>(input : &mut CharIndices<'a>) -> Result<(usize, Vec<char>), ParseError> {
+    fn scientific_notation<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
         parser!(input => {
             e <= any;
             where e.1 == 'e' || e.1 == 'E';
@@ -75,8 +83,8 @@ fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
             let s : Option<(usize, char)> = s;
             ds <= one_or_more_digits;
             select {
-                let last = ds.0;
-                let mut digits = ds.1;
+                let last = Last(ds.end);
+                let mut digits = ds.digits;
                 match s {
                     Some(s) => {
                         digits.insert(0, e.1);
@@ -96,8 +104,34 @@ fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
         ds <= one_or_more_digits;
         deci <= ? decimal;
         sci <= ? scientific_notation;
+        let s : Option<(usize, char)> = s;
+        let deci : Option<(Last, Vec<char>)> = deci;
+        let sci : Option<(Last, Vec<char>)> = sci;
         select {
+            let start = if s.is_some() {
+                s.as_ref().unwrap().0
+            }
+            else {
+                ds.start
+            };
+            let end = if sci.is_some() {
+                sci.as_ref().unwrap().0.0
+            }
+            else if deci.is_some() {
+                deci.as_ref().unwrap().0.0
+            }
+            else {
+                ds.end
+            };
+        
+            let chars = vec![ s.map_or(vec![], |x| vec![x.1])
+                            , ds.digits
+                            , deci.map_or(vec![], |x| x.1)
+                            , sci.map_or(vec![], |x| x.1)
+                            ];
 
+            let value = chars.into_iter().flatten().collect::<String>().parse::<f64>().expect("pre-parsed float failed to parse");
+            Lexeme::Float { value, start, end }
         }
     })
 }
