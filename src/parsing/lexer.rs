@@ -8,17 +8,18 @@ use crate::data::*;
 pub fn lex(input : &str) -> Result<Vec<Lexeme>, ParseError> {
     let mut input = input.char_indices();
     parser!(input => {
-        ls <= * clean_lexeme;
-        select ls
+        clean_lexemes <= * clean_lexeme;
+        ! end;
+        select clean_lexemes 
     })
 }
 
 fn clean_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     parser!(input => {
         _1 <= junk;
-        l <= lexeme;
+        some_lexeme <= lexeme;
         _2 <= junk;
-        select l
+        select some_lexeme
     })
 }
 

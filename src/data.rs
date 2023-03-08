@@ -1,4 +1,5 @@
 
+#[derive(Debug)]
 pub enum Lexeme {
     LParen { index : usize },
     RParen { index : usize },
