@@ -23,10 +23,11 @@ fn clean_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> 
 }
 
 fn lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
-    alt!(input => comma; l_paren; r_paren)
+    alt!(input => float; comma; l_paren; r_paren)
 }
 
 pat!(any<'a> : (usize, char) => (usize, char) = x => x);
+pat!(colon<'a> : (usize, char) => (usize, char) = x => x);
 pat!(comma<'a> : (usize, char) => Lexeme = (index, ',') => Lexeme::Comma { index } );
 pat!(l_paren<'a> : (usize, char) => Lexeme = (index, '(') => Lexeme::LParen { index } );
 pat!(r_paren<'a> : (usize, char) => Lexeme = (index, ')') => Lexeme::RParen { index } );
@@ -36,6 +37,57 @@ fn digit<'a>( input : &mut CharIndices<'a> ) -> Result<(usize, char), ParseError
         x <= any;
         where x.1.is_digit(10);
         select x
+    })
+}
+
+fn colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+    fn rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
+        parser!(input => {
+            rest <= any;
+            let c = rest.1;
+            where matches!( c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_');
+            select rest
+        })
+    }
+    parser!(input => {
+        c <= colon;
+        first <= any;
+        let f = first.1;
+        where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
+        r <= * rest;
+        select {
+            let mut rest = r.iter().map(|x| x.1).collect::<Vec<char>>();
+            rest.insert(0, f);
+            let value = rest.iter().collect::<String>(); 
+            let start = c.0;
+            let end = c.0 + r.len();
+            Lexeme::Symbol { value, start, end }
+        }
+    })
+}
+
+fn symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+    fn rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
+        parser!(input => {
+            rest <= any;
+            let c = rest.1;
+            where matches!( c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_');
+            select rest
+        })
+    }
+    parser!(input => {
+        first <= any;
+        let f = first.1;
+        where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
+        r <= * rest;
+        select {
+            let mut rest = r.iter().map(|x| x.1).collect::<Vec<char>>();
+            rest.insert(0, f);
+            let value = rest.iter().collect::<String>(); 
+            let start = first.0;
+            let end = first.0 + r.len();
+            Lexeme::Symbol { value, start, end }
+        }
     })
 }
 
