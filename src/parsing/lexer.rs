@@ -23,7 +23,7 @@ fn clean_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> 
 }
 
 fn lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
-    alt!(input => float; comma; l_paren; r_paren)
+    alt!(input => float; comma; l_paren; r_paren; colon_symbol; symbol)
 }
 
 pat!(any<'a> : (usize, char) => (usize, char) = x => x);
