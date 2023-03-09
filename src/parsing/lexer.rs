@@ -108,7 +108,7 @@ fn lex_float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     }
     fn lex_one_or_more_digits<'a>(input : &mut CharIndices<'a>) -> Result<Digits, ParseError> {
         parser!(input => {
-            digit <= ! lex_digit;
+            digit <= lex_digit;
             digits <= * lex_digit;
             select {
                 let last = digits.last().map_or(digit.0, |l| l.0);
