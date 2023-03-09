@@ -8,51 +8,51 @@ use crate::data::*;
 pub fn lex(input : &str) -> Result<Vec<Lexeme>, ParseError> {
     let mut input = input.char_indices();
     parser!(input => {
-        clean_lexemes <= * clean_lexeme;
+        clean_lexemes <= * lex_clean_lexeme;
         ! end;
         select clean_lexemes 
     })
 }
 
-fn clean_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+fn lex_clean_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     parser!(input => {
-        _1 <= junk;
-        some_lexeme <= lexeme;
-        _2 <= junk;
-        select some_lexeme
+        _1_junk <= junk;
+        lexeme <= lex_lexeme;
+        _2_junk <= junk;
+        select lexeme
     })
 }
 
-fn lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
-    alt!(input => float; comma; l_paren; r_paren; colon_symbol; symbol)
+fn lex_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+    alt!(input => lex_float; lex_comma; lex_l_paren; lex_r_paren; lex_colon_symbol; lex_symbol)
 }
 
-pat!(any<'a> : (usize, char) => (usize, char) = x => x);
-pat!(colon<'a> : (usize, char) => (usize, char) = x => x);
-pat!(comma<'a> : (usize, char) => Lexeme = (index, ',') => Lexeme::Comma { index } );
-pat!(l_paren<'a> : (usize, char) => Lexeme = (index, '(') => Lexeme::LParen { index } );
-pat!(r_paren<'a> : (usize, char) => Lexeme = (index, ')') => Lexeme::RParen { index } );
+pat!(lex_any<'a> : (usize, char) => (usize, char) = x => x);
+pat!(lex_colon<'a> : (usize, char) => (usize, char) = x => x);
+pat!(lex_comma<'a> : (usize, char) => Lexeme = (index, ',') => Lexeme::Comma { index } );
+pat!(lex_l_paren<'a> : (usize, char) => Lexeme = (index, '(') => Lexeme::LParen { index } );
+pat!(lex_r_paren<'a> : (usize, char) => Lexeme = (index, ')') => Lexeme::RParen { index } );
 
-fn digit<'a>( input : &mut CharIndices<'a> ) -> Result<(usize, char), ParseError> {
+fn lex_digit<'a>( input : &mut CharIndices<'a> ) -> Result<(usize, char), ParseError> {
     parser!( input => {
-        x <= any;
+        x <= lex_any;
         where x.1.is_digit(10);
         select x
     })
 }
 
-fn colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+fn lex_colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     fn rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
-            rest <= any;
+            rest <= lex_any;
             let c = rest.1;
             where matches!( c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_');
             select rest
         })
     }
     parser!(input => {
-        c <= colon;
-        first <= any;
+        c <= lex_colon;
+        first <= lex_any;
         let f = first.1;
         where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
         r <= * rest;
@@ -67,17 +67,17 @@ fn colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> 
     })
 }
 
-fn symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+fn lex_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     fn rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
-            rest <= any;
+            rest <= lex_any;
             let c = rest.1;
             where matches!( c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_');
             select rest
         })
     }
     parser!(input => {
-        first <= any;
+        first <= lex_any;
         let f = first.1;
         where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
         r <= * rest;
@@ -92,24 +92,24 @@ fn symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     })
 }
 
-fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
+fn lex_float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     struct Digits {
         start : usize,
         end : usize,
         digits : Vec<char>,
     }
     struct Last(usize);
-    fn sign<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
+    fn lex_sign<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
-            x <= any;
+            x <= lex_any;
             where x.1 == '+' || x.1 == '-';
             select x
         })
     }
-    fn one_or_more_digits<'a>(input : &mut CharIndices<'a>) -> Result<Digits, ParseError> {
+    fn lex_one_or_more_digits<'a>(input : &mut CharIndices<'a>) -> Result<Digits, ParseError> {
         parser!(input => {
-            d <= ! digit;
-            ds <= * digit;
+            d <= ! lex_digit;
+            ds <= * lex_digit;
             select {
                 let last = ds.last().map_or(d.0, |l| l.0);
                 let mut digits = ds.into_iter().map(|x| x.1).collect::<Vec<_>>();
@@ -118,11 +118,11 @@ fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
             }
         })
     }
-    fn decimal<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
+    fn lex_decimal<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
         parser!(input => {
-            dot <= any;
+            dot <= lex_any;
             where dot.1 == '.';
-            ds <= one_or_more_digits;
+            ds <= lex_one_or_more_digits;
             let cs = ds.digits; 
             let last = Last(ds.end);
             select {
@@ -132,13 +132,13 @@ fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
             }
         })
     }
-    fn scientific_notation<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
+    fn lex_scientific_notation<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
         parser!(input => {
-            e <= any;
+            e <= lex_any;
             where e.1 == 'e' || e.1 == 'E';
-            s <= ? sign;
+            s <= ? lex_sign;
             let s : Option<(usize, char)> = s;
-            ds <= one_or_more_digits;
+            ds <= lex_one_or_more_digits;
             select {
                 let last = Last(ds.end);
                 let mut digits = ds.digits;
@@ -157,10 +157,10 @@ fn float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
         })
     }
     parser!(input => {
-        s <= ? sign;
-        ds <= one_or_more_digits;
-        deci <= ? decimal;
-        sci <= ? scientific_notation;
+        s <= ? lex_sign;
+        ds <= lex_one_or_more_digits;
+        deci <= ? lex_decimal;
+        sci <= ? lex_scientific_notation;
         let s : Option<(usize, char)> = s;
         let deci : Option<(Last, Vec<char>)> = deci;
         let sci : Option<(Last, Vec<char>)> = sci;
@@ -197,7 +197,7 @@ fn junk<'a>(input : &mut CharIndices<'a>) -> Result<(), ParseError> {
 
     fn space<'a>(input : &mut CharIndices<'a>) -> Result<(), ParseError> {
         parser!( input => {
-            x <= any;
+            x <= lex_any;
             where x.1.is_whitespace();
             select ()
         })
