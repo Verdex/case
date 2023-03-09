@@ -157,34 +157,34 @@ fn lex_float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
         })
     }
     parser!(input => {
-        s <= ? lex_sign;
-        ds <= lex_one_or_more_digits;
-        deci <= ? lex_decimal;
-        sci <= ? lex_scientific_notation;
-        let s : Option<(usize, char)> = s;
-        let deci : Option<(Last, Vec<char>)> = deci;
-        let sci : Option<(Last, Vec<char>)> = sci;
+        float_sign <= ? lex_sign;
+        float_digits <= lex_one_or_more_digits;
+        decimal <= ? lex_decimal;
+        scientific_notation <= ? lex_scientific_notation;
+        let float_sign : Option<(usize, char)> = float_sign;
+        let decimal : Option<(Last, Vec<char>)> = decimal;
+        let scientific_notation : Option<(Last, Vec<char>)> = scientific_notation;
         select {
-            let start = if s.is_some() {
-                s.as_ref().unwrap().0
+            let start = if float_sign.is_some() {
+                float_sign.as_ref().unwrap().0
             }
             else {
-                ds.start
+                float_digits.start
             };
-            let end = if sci.is_some() {
-                sci.as_ref().unwrap().0.0
+            let end = if scientific_notation.is_some() {
+                scientific_notation.as_ref().unwrap().0.0
             }
-            else if deci.is_some() {
-                deci.as_ref().unwrap().0.0
+            else if decimal.is_some() {
+                decimal.as_ref().unwrap().0.0
             }
             else {
-                ds.end
+                float_digits.end
             };
         
-            let chars = vec![ s.map_or(vec![], |x| vec![x.1])
-                            , ds.digits
-                            , deci.map_or(vec![], |x| x.1)
-                            , sci.map_or(vec![], |x| x.1)
+            let chars = vec![ float_sign.map_or(vec![], |x| vec![x.1])
+                            , float_digits.digits
+                            , decimal.map_or(vec![], |x| x.1)
+                            , scientific_notation.map_or(vec![], |x| x.1)
                             ];
 
             let value = chars.into_iter().flatten().collect::<String>().parse::<f64>().expect("pre-parsed float failed to parse");
