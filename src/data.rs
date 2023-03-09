@@ -19,7 +19,7 @@ impl Lexeme {
 }
 
 #[derive(Debug)]
-pub enum FuncDefOrExpr {
+pub enum DefOrExpr {
     Expr(Expr),
 }
 
