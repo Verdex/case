@@ -5,8 +5,7 @@ use renounce::*;
 
 use crate::data::*;
 
-pub fn lex(input : &str) -> Result<Vec<Lexeme>, ParseError> {
-    let mut input = input.char_indices();
+pub fn lex<'a>(input : &mut CharIndices<'a>) -> Result<Vec<Lexeme>, ParseError> {
     parser!(input => {
         clean_lexemes <= * lex_clean_lexeme;
         ! end;
