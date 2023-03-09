@@ -35,33 +35,33 @@ pat!(lex_r_paren<'a> : (usize, char) => Lexeme = (index, ')') => Lexeme::RParen 
 
 fn lex_digit<'a>( input : &mut CharIndices<'a> ) -> Result<(usize, char), ParseError> {
     parser!( input => {
-        x <= lex_any;
-        where x.1.is_digit(10);
-        select x
+        digit_candidate <= lex_any;
+        where digit_candidate.1.is_digit(10);
+        select digit_candidate 
     })
 }
 
 fn lex_colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     fn lex_rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
-            rest <= lex_any;
-            let c = rest.1;
+            secondary_colon_symbol_char_candidate <= lex_any;
+            let c = secondary_colon_symbol_char_candidate.1;
             where matches!( c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_');
-            select rest
+            select secondary_colon_symbol_char_candidate 
         })
     }
     parser!(input => {
-        c <= lex_colon;
-        first <= lex_any;
-        let f = first.1;
-        where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
-        r <= * lex_rest;
+        colon <= lex_colon;
+        init_colon_symbol_char_candidate <= lex_any;
+        let init = init_colon_symbol_char_candidate.1;
+        where matches!( init, 'a'..='z' | 'A'..='Z' | '_' );
+        secondary_colon_symbol_chars <= * lex_rest;
         select {
-            let mut rest = r.iter().map(|x| x.1).collect::<Vec<char>>();
-            rest.insert(0, f);
+            let mut rest = secondary_colon_symbol_chars.iter().map(|x| x.1).collect::<Vec<char>>();
+            rest.insert(0, init);
             let value = rest.iter().collect::<String>(); 
-            let start = c.0;
-            let end = c.0 + r.len();
+            let start = colon.0;
+            let end = colon.0 + secondary_colon_symbol_chars.len();
             Lexeme::Symbol { value, start, end }
         }
     })
@@ -70,23 +70,23 @@ fn lex_colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseErr
 fn lex_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     fn lex_rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
-            rest <= lex_any;
-            let c = rest.1;
+            secondary_symbol_char_candidate <= lex_any;
+            let c = secondary_symbol_char_candidate.1;
             where matches!( c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_');
-            select rest
+            select secondary_symbol_char_candidate 
         })
     }
     parser!(input => {
-        first <= lex_any;
-        let f = first.1;
+        init_symbol_char_candidate <= lex_any;
+        let f = init_symbol_char_candidate.1;
         where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
-        r <= * lex_rest;
+        secondary_symbol_chars <= * lex_rest;
         select {
-            let mut rest = r.iter().map(|x| x.1).collect::<Vec<char>>();
+            let mut rest = secondary_symbol_chars.iter().map(|x| x.1).collect::<Vec<char>>();
             rest.insert(0, f);
             let value = rest.iter().collect::<String>(); 
-            let start = first.0;
-            let end = first.0 + r.len();
+            let start = init_symbol_char_candidate.0;
+            let end = init_symbol_char_candidate.0 + secondary_symbol_chars.len();
             Lexeme::Symbol { value, start, end }
         }
     })
@@ -101,30 +101,30 @@ fn lex_float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     struct Last(usize);
     fn lex_sign<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
-            x <= lex_any;
-            where x.1 == '+' || x.1 == '-';
-            select x
+            sign_candidate <= lex_any;
+            where sign_candidate.1 == '+' || sign_candidate.1 == '-';
+            select sign_candidate 
         })
     }
     fn lex_one_or_more_digits<'a>(input : &mut CharIndices<'a>) -> Result<Digits, ParseError> {
         parser!(input => {
-            d <= ! lex_digit;
-            ds <= * lex_digit;
+            digit <= ! lex_digit;
+            digits <= * lex_digit;
             select {
-                let last = ds.last().map_or(d.0, |l| l.0);
-                let mut digits = ds.into_iter().map(|x| x.1).collect::<Vec<_>>();
-                digits.insert(0, d.1);
-                Digits { start : d.0, end : last, digits }
+                let last = digits.last().map_or(digit.0, |l| l.0);
+                let mut digits = digits.into_iter().map(|x| x.1).collect::<Vec<_>>();
+                digits.insert(0, digit.1);
+                Digits { start : digit.0, end : last, digits }
             }
         })
     }
     fn lex_decimal<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
         parser!(input => {
-            dot <= lex_any;
-            where dot.1 == '.';
-            ds <= lex_one_or_more_digits;
-            let cs = ds.digits; 
-            let last = Last(ds.end);
+            decimal_dot_candidate <= lex_any;
+            where decimal_dot_candidate.1 == '.';
+            decimal_digits <= lex_one_or_more_digits;
+            let cs = decimal_digits.digits; 
+            let last = Last(decimal_digits.end);
             select {
                 let mut cs = cs;
                 cs.insert(0, '.');
@@ -134,22 +134,22 @@ fn lex_float<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
     }
     fn lex_scientific_notation<'a>(input : &mut CharIndices<'a>) -> Result<(Last, Vec<char>), ParseError> {
         parser!(input => {
-            e <= lex_any;
-            where e.1 == 'e' || e.1 == 'E';
-            s <= ? lex_sign;
-            let s : Option<(usize, char)> = s;
-            ds <= lex_one_or_more_digits;
+            e_candidate <= lex_any;
+            where e_candidate.1 == 'e' || e_candidate.1 == 'E';
+            scientific_notation_sign <= ? lex_sign;
+            let scientific_notation_sign : Option<(usize, char)> = scientific_notation_sign;
+            scientific_notation_digits <= lex_one_or_more_digits;
             select {
-                let last = Last(ds.end);
-                let mut digits = ds.digits;
-                match s {
+                let last = Last(scientific_notation_digits.end);
+                let mut digits = scientific_notation_digits.digits;
+                match scientific_notation_sign {
                     Some(s) => {
-                        digits.insert(0, e.1);
+                        digits.insert(0, e_candidate.1);
                         digits.insert(1, s.1);
                         (last, digits)   
                     },
                     None => {
-                        digits.insert(0, e.1);
+                        digits.insert(0, e_candidate.1);
                         (last, digits)
                     },
                 }
