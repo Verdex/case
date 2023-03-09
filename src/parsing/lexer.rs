@@ -42,7 +42,7 @@ fn lex_digit<'a>( input : &mut CharIndices<'a> ) -> Result<(usize, char), ParseE
 }
 
 fn lex_colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
-    fn rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
+    fn lex_rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
             rest <= lex_any;
             let c = rest.1;
@@ -55,7 +55,7 @@ fn lex_colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseErr
         first <= lex_any;
         let f = first.1;
         where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
-        r <= * rest;
+        r <= * lex_rest;
         select {
             let mut rest = r.iter().map(|x| x.1).collect::<Vec<char>>();
             rest.insert(0, f);
@@ -68,7 +68,7 @@ fn lex_colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseErr
 }
 
 fn lex_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
-    fn rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
+    fn lex_rest<'a>(input : &mut CharIndices<'a>) -> Result<(usize, char), ParseError> {
         parser!(input => {
             rest <= lex_any;
             let c = rest.1;
@@ -80,7 +80,7 @@ fn lex_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
         first <= lex_any;
         let f = first.1;
         where matches!( f, 'a'..='z' | 'A'..='Z' | '_' );
-        r <= * rest;
+        r <= * lex_rest;
         select {
             let mut rest = r.iter().map(|x| x.1).collect::<Vec<char>>();
             rest.insert(0, f);
