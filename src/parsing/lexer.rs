@@ -217,7 +217,7 @@ mod test {
     fn float_parser_should_parse_everything() {
         let input = "+1234.1234E+12";
         let mut input = input.char_indices();
-        let output = float(&mut input).unwrap();
+        let output = lex_float(&mut input).unwrap();
         if let Lexeme::Float { value: output, .. } = output {
             assert_eq!( 1234.1234E+12, output );
         }
@@ -230,7 +230,7 @@ mod test {
     fn float_parser_should_parse_negatives() {
         let input = "-1234.1234E-12";
         let mut input = input.char_indices();
-        let output = float(&mut input).unwrap();
+        let output = lex_float(&mut input).unwrap();
         if let Lexeme::Float { value: output, .. } = output {
             assert_eq!( -1234.1234E-12, output );
         }
@@ -243,7 +243,7 @@ mod test {
     fn float_parser_should_parse_little_e_scientific_notation() {
         let input = "-1234.1234e-12";
         let mut input = input.char_indices();
-        let output = float(&mut input).unwrap();
+        let output = lex_float(&mut input).unwrap();
         if let Lexeme::Float { value: output, .. } = output {
             assert_eq!( -1234.1234E-12, output );
         }
@@ -256,7 +256,7 @@ mod test {
     fn float_parser_should_parse_no_scientific_notation() {
         let input = "-1234.1234";
         let mut input = input.char_indices();
-        let output = float(&mut input).unwrap();
+        let output = lex_float(&mut input).unwrap();
         if let Lexeme::Float { value: output, .. } = output {
             assert_eq!( -1234.1234, output );
         }
@@ -269,7 +269,7 @@ mod test {
     fn float_parser_should_parse_no_sign() {
         let input = "1234.1234";
         let mut input = input.char_indices();
-        let output = float(&mut input).unwrap();
+        let output = lex_float(&mut input).unwrap();
         if let Lexeme::Float { value: output, .. } = output {
             assert_eq!( 1234.1234, output );
         }
@@ -282,7 +282,7 @@ mod test {
     fn float_parser_should_parse_no_decimal() {
         let input = "1234";
         let mut input = input.char_indices();
-        let output = float(&mut input).unwrap();
+        let output = lex_float(&mut input).unwrap();
         if let Lexeme::Float { value: output, .. } = output {
             assert_eq!( 1234.0, output );
         }
@@ -295,7 +295,7 @@ mod test {
     fn float_parser_should_parse_no_decimal_with_scientific_notation() {
         let input = "1234E12";
         let mut input = input.char_indices();
-        let output = float(&mut input).unwrap();
+        let output = lex_float(&mut input).unwrap();
         if let Lexeme::Float { value: output, .. } = output {
             assert_eq!( 1234.0E12, output );
         }
