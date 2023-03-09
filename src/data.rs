@@ -17,3 +17,13 @@ impl Lexeme {
         0
     }
 }
+
+#[derive(Debug)]
+pub enum FuncDefOrExpr {
+    Expr(Expr),
+}
+
+#[derive(Debug)] 
+pub enum Expr {
+    TupleCons
+}
