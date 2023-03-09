@@ -28,7 +28,7 @@ fn lex_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
 }
 
 pat!(lex_any<'a> : (usize, char) => (usize, char) = x => x);
-pat!(lex_colon<'a> : (usize, char) => (usize, char) = x => x);
+pat!(lex_colon<'a> : (usize, char) => (usize, char) = (i, ':') => (i, ':'));
 pat!(lex_comma<'a> : (usize, char) => Lexeme = (index, ',') => Lexeme::Comma { index } );
 pat!(lex_l_paren<'a> : (usize, char) => Lexeme = (index, '(') => Lexeme::LParen { index } );
 pat!(lex_r_paren<'a> : (usize, char) => Lexeme = (index, ')') => Lexeme::RParen { index } );
@@ -62,7 +62,7 @@ fn lex_colon_symbol<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseErr
             let value = rest.iter().collect::<String>(); 
             let start = colon.0;
             let end = colon.0 + secondary_colon_symbol_chars.len();
-            Lexeme::Symbol { value, start, end }
+            Lexeme::ColonSymbol { value, start, end }
         }
     })
 }
