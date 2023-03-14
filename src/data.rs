@@ -25,5 +25,7 @@ pub enum DefOrExpr {
 
 #[derive(Debug)] 
 pub enum Expr {
-    TupleCons
+    TupleCons { params: Vec<Expr>, l_start : usize, l_end : usize },
+    Float { value : f64, l_start : usize, l_end : usize },
+    Symbol { value : String, l_start : usize, l_end : usize },
 }
