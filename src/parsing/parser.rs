@@ -9,7 +9,8 @@ macro_rules! input {
 
 
 pub fn parse<'a>(input : input!('a)) -> Result<Vec<DefOrExpr>, ParseError> {
-    Ok(vec![])
+    let x = parse_expr(input)?;
+    Ok(vec![DefOrExpr::Expr(x)])
 }
 
 
@@ -44,7 +45,7 @@ fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
                 _ => { },
             }
 
-            Expr::TupleCons { params: exprs, l_start: 0, l_end: 0 }
+            Expr::TupleCons { params: exprs, l_start: l_paren.0, l_end: r_paren.0 }
         }
     })
 }

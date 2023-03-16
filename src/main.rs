@@ -15,7 +15,9 @@ fn main() {
         // see what the cause of the fatal result was in addition to looking at the parse error contents
 
         let mut input = input.char_indices();
-        let x = parsing::lexer::lex(&mut input).unwrap();
-        println!("{:?}", x);
+        let lexemes = parsing::lexer::lex(&mut input).unwrap();
+        let mut lexemes = lexemes.iter().enumerate();
+        let ast = parsing::parser::parse(&mut lexemes).unwrap();
+        println!("{:?}", ast);
     } 
 }
