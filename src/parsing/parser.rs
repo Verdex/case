@@ -14,7 +14,7 @@ pub fn parse<'a>(input : input!('a)) -> Result<Vec<DefOrExpr>, ParseError> {
 
 
 fn parse_expr<'a>(input : input!('a)) -> Result<Expr, ParseError> {
-    alt!( input => parse_float; parse_symbol )
+    alt!( input => parse_float; parse_symbol; parse_tuple_cons )
 }
 
 pat!(parse_float<'a> : (usize, &'a Lexeme) => Expr = 
