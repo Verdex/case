@@ -6,8 +6,14 @@ version = 3
 name = "case"
 version = "0.1.0"
 dependencies = [
+ "intra",
  "renounce",
 ]
+
+[[package]]
+name = "intra"
+version = "0.1.0"
+source = "git+https://www.github.com/verdex/intra?tag=release-0.1.0#d332400918b638fe81cb6442d850a0ed81d36176"
 
 [[package]]
 name = "renounce"
