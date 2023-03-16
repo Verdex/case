@@ -9,15 +9,6 @@ pub enum Lexeme {
     ColonSymbol { value : String, start : usize, end : usize },
 }
 
-impl Lexeme { 
-    fn start(&self) -> usize {
-        0
-    }
-    fn end(&self) -> usize {
-        0
-    }
-}
-
 #[derive(Debug)]
 pub enum DefOrExpr {
     Expr(Expr),
