@@ -54,24 +54,6 @@ pat!(parse_comma<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexe
 pat!(parse_l_paren<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::LParen { .. }) => x);
 pat!(parse_r_paren<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::RParen { .. }) => x);
 
-/*
-    variable, cons, list, object, object-list, call pattern, next pattern, or pattern, if pattern, and pattern,
-    at pattern, tuple pattern
-
-    * x
-    * (a, b)
-    * [], [x], [x, y, ...]
-    * {[x; y; z]}
-    * {[* x; ? y;]}  // ?
-    * x(y, z, w) 
-    * {[x]}
-    * { x; y; z; }
-    * { !; x(y, !, w); }
-    * { w(a, x @ ! &(a:b, c:d) ) }  // b and d are some patterns with some known list of anon-struct return value, which is dropped into a and c
-    * $x(a) // call pattern 'x' and match against the returned value
-
-
-*/
 
 #[cfg(test)]
 mod test { 
