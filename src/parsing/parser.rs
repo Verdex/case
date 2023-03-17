@@ -68,7 +68,7 @@ pat!(parse_r_paren<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Le
     * { x; y; z; }
     * { !; x(y, !, w); }
     * { w(a, x @ ! &(a:b, c:d) ) }  // b and d are some patterns with some known list of anon-struct return value, which is dropped into a and c
-    * 
+    * $x(a) // call pattern 'x' and match against the returned value
 
 
 */
