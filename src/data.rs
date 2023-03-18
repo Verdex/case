@@ -23,6 +23,8 @@ pub enum Expr {
 
 #[derive(Debug)]
 pub enum Pat {
-    UnboundVariable(&'static str),
-    Tuple(Vec<Pat>),
+    Float { value: f64, l_start : usize, l_end : usize },
+    Symbol { value : String, l_start : usize, l_end : usize },
+    UnboundVariable { value : String, l_start : usize, l_end : usize },
+    Tuple { params : Vec<Pat>, l_start : usize, l_end : usize },
 }
