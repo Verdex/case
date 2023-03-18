@@ -1,4 +1,8 @@
 
+use renounce::*;
+
+use crate::data::*;
+
 /*
     variable, cons, list, object, object-list, call pattern, next pattern, or pattern, if pattern, and pattern, xor pattern
     at pattern, tuple pattern
@@ -17,3 +21,12 @@
 
 
 */
+
+type ExprParser<T> = fn(&mut T) -> Result<Expr, ParseError>;
+
+pub fn parse_pattern<'a, T>(input : &mut T, expr_parser : ExprParser<T>) -> Result<Pat, ParseError> 
+    where T : Iterator<Item = (usize, &'a Lexeme)> + Clone {
+    
+    
+}
+

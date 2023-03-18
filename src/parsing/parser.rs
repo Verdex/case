@@ -1,7 +1,7 @@
 
 use renounce::*;
-
 use crate::data::*;
+use super::pattern_parser::*;
 
 macro_rules! input {
     ($life:lifetime) => { &mut (impl Iterator<Item = (usize, &$life Lexeme)> + Clone) }
