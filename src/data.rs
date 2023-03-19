@@ -28,3 +28,18 @@ pub enum Pat {
     UnboundVariable { value : String, l_start : usize, l_end : usize },
     Tuple { params : Vec<Pat>, l_start : usize, l_end : usize },
 }
+
+#[derive(Debug)]
+pub enum IlData {
+    Float(f64),
+    Symbol(String),
+    Tuple(Vec<IlData>),
+    String(String),
+}
+
+#[derive(Debug)]
+pub enum Il {
+    Push(IlData),
+    Stringify,
+    Print,
+}
