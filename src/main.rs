@@ -1,6 +1,7 @@
 
 mod data;
 mod parsing;
+mod compiling;
 
 fn main() {
     use std::io::{stdout, stdin, Write};

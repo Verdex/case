@@ -33,8 +33,8 @@ pub enum Pat {
 pub enum IlData {
     Float(f64),
     Symbol(String),
-    Tuple(Vec<IlData>),
     String(String),
+    Tuple(Vec<IlData>),
 }
 
 #[derive(Debug)]
