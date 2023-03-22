@@ -19,6 +19,8 @@ fn main() {
         let lexemes = parsing::lexer::lex(&mut input).unwrap();
         let mut lexemes = lexemes.iter().enumerate();
         let ast = parsing::parser::parse(&mut lexemes).unwrap();
-        println!("{:?}", ast);
+        let il = compiling::compiler::compile(ast).unwrap();
+
+        println!("{:?}", il);
     } 
 }

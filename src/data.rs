@@ -35,11 +35,17 @@ pub enum IlData {
     Symbol(String),
     String(String),
     Tuple(Vec<IlData>),
+    List(Vec<IlData>),
 }
 
 #[derive(Debug)]
 pub enum Il {
     Push(IlData),
+    TupleCons(usize),
     Stringify,
     Print,
 }
+
+#[derive(Debug)]
+pub enum CompileError { }
+// TODO: Error impl
