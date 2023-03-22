@@ -1,9 +1,15 @@
 
 use crate::data::*;
 
-pub fn compile(input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
-
-    Ok(vec![Il::Print])
+pub fn compile(mut input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
+    if let Some(DefOrExpr::Expr(x)) = input.pop() {
+        let mut il = compile_expr(x)?;
+        il.push(Il::Print);
+        Ok(il)
+    }
+    else {
+        Ok(vec![])
+    }
 }
 
 fn compile_expr(input : Expr) -> Result<Vec<Il>, CompileError> {
