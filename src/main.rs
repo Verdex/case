@@ -2,6 +2,7 @@
 mod data;
 mod parsing;
 mod compiling;
+mod vm;
 
 fn main() {
     use std::io::{stdout, stdin, Write};
@@ -20,7 +21,6 @@ fn main() {
         let mut lexemes = lexemes.iter().enumerate();
         let ast = parsing::parser::parse(&mut lexemes).unwrap();
         let il = compiling::compiler::compile(ast).unwrap();
-
-        println!("{:?}", il);
+        vm::execute(il);
     } 
 }
