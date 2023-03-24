@@ -36,13 +36,22 @@ pub enum IlData {
     String(String),
     Tuple(Vec<IlData>),
     List(Vec<IlData>),
+    Pattern(IlPat),
+}
+
+#[derive(Debug)]
+pub enum IlPat {
+    Float(f64),
+    Symbol(String),
+    UnboundVariable(String),
+    Tuple(Vec<IlPat>),
 }
 
 #[derive(Debug)]
 pub enum Il {
     Push(IlData),
     TupleCons(usize),
-    Stringify,
+    Match,
     Print,
 }
 
