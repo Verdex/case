@@ -18,9 +18,11 @@ pub enum DefOrExpr {
 
 #[derive(Debug)]
 pub struct FnDef {
-    name : String,
-    params : Vec<String>,
-    body : Expr,
+    pub name : String,
+    pub params : Vec<String>,
+    pub body : Expr,
+    pub l_start : usize,
+    pub l_end : usize,
 }
 
 #[derive(Debug)] 
