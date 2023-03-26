@@ -9,19 +9,79 @@ macro_rules! input {
 
 
 pub fn parse<'a>(input : input!('a)) -> Result<Vec<DefOrExpr>, ParseError> {
-    let x = parse_expr(input)?;
-    Ok(vec![DefOrExpr::Expr(x)])
+    fn w_parse_expr<'a>(input : input!('a)) -> Result<DefOrExpr, ParseError> {
+        parser!(input => {
+            expr <= parse_expr;
+            select DefOrExpr::Expr(expr)
+        })
+    }
+    fn w_parse_fn_def<'a>(input : input!('a)) -> Result<DefOrExpr, ParseError> {
+        parser!(input => {
+            fn_def <= parse_fn_def;
+            select DefOrExpr::FnDef(fn_def)
+        })
+    }
+
+    fn parse_def_or_expr<'a>(input : input!('a)) -> Result<DefOrExpr, ParseError> {
+        alt!(input => w_parse_fn_def; w_parse_expr)
+    }
+
+    parser!(input => {
+        defs_and_exprs <= * parse_def_or_expr;
+        select defs_and_exprs
+    })
 }
 
+fn parse_fn_def<'a>(input : input!('a)) -> Result<FnDef, ParseError> {
+    fn parse_ident_comma<'a>(input : input!('a)) -> Result<(usize, String), ParseError> {
+        // TODO put start and stop data in return type?
+        parser!(input => {
+            ident <= parse_ident;
+            comma <= parse_comma;
+            select ident 
+        })
+    }
+
+    parser!(input => {
+        fn_sym <= parse_ident;
+        where fn_sym.1 == "fn";
+        name <= parse_ident;
+        _l_paren <= parse_l_paren;
+        params <= * parse_ident_comma;
+        maybe_last_param <= ? parse_ident;
+        _r_parent <= parse_r_paren;
+        expr <= parse_expr;
+        semi <= parse_semi_colon;
+        select {
+            let mut params = params;
+            match maybe_last_param {
+                Some(last_param) => { params.push(last_param); },
+                _ => { },
+            }
+            // TODO start and end
+            FnDef { name: name.1.to_string()
+                  , params: params.into_iter().map(|x| x.1).collect()
+                  , body: expr
+                  , l_start: 0
+                  , l_end: 0
+                  }
+        }
+    })
+}
 
 fn parse_expr<'a>(input : input!('a)) -> Result<Expr, ParseError> {
-    alt!( input => parse_float; parse_symbol; parse_tuple_cons )
+    alt!( input => parse_float
+                 ; parse_symbol
+                 ; parse_tuple_cons 
+                 )
 }
 
 pat!(parse_float<'a> : (usize, &'a Lexeme) => Expr = 
     (i, Lexeme::Float { value, .. }) => Expr::Float { value: *value, l_start: i, l_end: i });
 pat!(parse_symbol<'a> : (usize, &'a Lexeme) => Expr = 
     (i, Lexeme::ColonSymbol{ value, .. }) => Expr::Symbol { value: value.to_string(), l_start: i, l_end: i });
+pat!(parse_ident<'a> : (usize, &'a Lexeme) => (usize, String) = 
+    (i, Lexeme::Symbol{ value, .. }) => (i, value.to_string()));
 
 fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
     fn parse_expr_comma<'a>(input : input!('a)) -> Result<Expr, ParseError> {
@@ -53,6 +113,7 @@ fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
 pat!(parse_comma<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::Comma { .. }) => x);
 pat!(parse_l_paren<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::LParen { .. }) => x);
 pat!(parse_r_paren<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::RParen { .. }) => x);
+pat!(parse_semi_colon<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::SemiColon{ .. }) => x);
 
 
 #[cfg(test)]
