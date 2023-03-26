@@ -13,6 +13,14 @@ pub enum Lexeme {
 #[derive(Debug)]
 pub enum DefOrExpr {
     Expr(Expr),
+    FnDef(FnDef),
+}
+
+#[derive(Debug)]
+pub struct FnDef {
+    name : String,
+    params : Vec<String>,
+    body : Expr,
 }
 
 #[derive(Debug)] 
