@@ -23,7 +23,14 @@ fn lex_clean_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseErr
 }
 
 fn lex_lexeme<'a>(input : &mut CharIndices<'a>) -> Result<Lexeme, ParseError> {
-    alt!(input => lex_float; lex_comma; lex_l_paren; lex_r_paren; lex_colon_symbol; lex_symbol)
+    alt!(input => lex_float
+                ; lex_comma
+                ; lex_l_paren
+                ; lex_r_paren
+                ; lex_colon_symbol
+                ; lex_symbol
+                ; lex_semi_colon
+                )
 }
 
 pat!(lex_any<'a> : (usize, char) => (usize, char) = x => x);
@@ -31,6 +38,7 @@ pat!(lex_colon<'a> : (usize, char) => (usize, char) = (i, ':') => (i, ':'));
 pat!(lex_comma<'a> : (usize, char) => Lexeme = (index, ',') => Lexeme::Comma { index } );
 pat!(lex_l_paren<'a> : (usize, char) => Lexeme = (index, '(') => Lexeme::LParen { index } );
 pat!(lex_r_paren<'a> : (usize, char) => Lexeme = (index, ')') => Lexeme::RParen { index } );
+pat!(lex_semi_colon<'a> : (usize, char) => Lexeme = (index, ';') => Lexeme::SemiColon { index } );
 
 fn lex_digit<'a>( input : &mut CharIndices<'a> ) -> Result<(usize, char), ParseError> {
     parser!( input => {
