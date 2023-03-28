@@ -126,6 +126,48 @@ mod test {
     fn slice<'a, T>(input : &'a Vec<T>) -> &'a [T] { &input[..] }
 
     #[test]
+    fn parse_should_parse_fn_def() {
+        let input = "fn name(a, b, c) 1.0;";
+        let mut input = input.char_indices();
+        let ls = lex(&mut input).unwrap();
+        let mut ls = ls.iter().enumerate();
+        let output = parse(&mut ls).unwrap();
+
+        let mut matched = false;
+        atom!( output => [ref x] x
+                       ; slice $ [[ DefOrExpr::FnDef(def) ]] def
+                       ; [ FnDef { name, params, body, .. } ] body
+                       ; [ Expr::Float { value: 1.0, .. } ]
+                       => { 
+                        assert_eq!(name, "name");
+                        assert_eq!(params[0], "a");
+                        assert_eq!(params[1], "b");
+                        assert_eq!(params[2], "c");
+
+                        matched = true; 
+                    } );
+
+        assert!(matched);
+    }
+
+    #[test]
+    fn parse_should_parse_float() {
+        let input = "1.0";
+        let mut input = input.char_indices();
+        let ls = lex(&mut input).unwrap();
+        let mut ls = ls.iter().enumerate();
+        let output = parse(&mut ls).unwrap();
+
+        let mut matched = false;
+        atom!( output => [ref x] x
+                       ; slice $ [[ DefOrExpr::Expr(e) ]] e
+                       ; [ Expr::Float { value: 1.0, .. } ] 
+                       => { matched = true; } );
+
+        assert!(matched);
+    }
+
+    #[test]
     fn parse_tuple_cons_should_parse() {
         let input = "(1, 2, 3)";
         let mut input = input.char_indices();
