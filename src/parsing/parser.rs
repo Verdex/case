@@ -73,8 +73,14 @@ fn parse_expr<'a>(input : input!('a)) -> Result<Expr, ParseError> {
     alt!( input => parse_float
                  ; parse_symbol
                  ; parse_tuple_cons 
+                 ; parse_var
                  )
 }
+
+
+/*fn parse_call<'a>(input : input!('a)) -> Result<Expr, ParseError> {
+
+}*/
 
 pat!(parse_float<'a> : (usize, &'a Lexeme) => Expr = 
     (i, Lexeme::Float { value, .. }) => Expr::Float { value: *value, l_start: i, l_end: i });
@@ -82,6 +88,8 @@ pat!(parse_symbol<'a> : (usize, &'a Lexeme) => Expr =
     (i, Lexeme::ColonSymbol{ value, .. }) => Expr::Symbol { value: value.to_string(), l_start: i, l_end: i });
 pat!(parse_ident<'a> : (usize, &'a Lexeme) => (usize, String) = 
     (i, Lexeme::Symbol{ value, .. }) => (i, value.to_string()));
+pat!(parse_var<'a> : (usize, &'a Lexeme) => Expr = 
+    (i, Lexeme::Symbol{ value, .. }) => Expr::Var { value: value.to_string(), l_start: i, l_end: i });
 
 fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
     fn parse_expr_comma<'a>(input : input!('a)) -> Result<Expr, ParseError> {

@@ -30,6 +30,7 @@ pub enum Expr {
     TupleCons { params: Vec<Expr>, l_start : usize, l_end : usize },
     Float { value : f64, l_start : usize, l_end : usize },
     Symbol { value : String, l_start : usize, l_end : usize },
+    Var { value : String, l_start : usize, l_end : usize },
 }
 
 #[derive(Debug)]

@@ -14,6 +14,7 @@ pub fn compile(mut input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
 
 fn compile_expr(input : Expr) -> Result<Vec<Il>, CompileError> {
     match input { 
+        Expr::Var { value, .. } => Ok(vec![]), // TODO
         Expr::Float { value, .. } => Ok(vec![Il::Push(IlData::Float(value))]),
         Expr::Symbol { value, .. } => Ok(vec![Il::Push(IlData::Symbol(value))]),
         Expr::TupleCons { params, .. } => {
