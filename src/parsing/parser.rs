@@ -113,7 +113,7 @@ fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
 pat!(parse_comma<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::Comma { .. }) => x);
 pat!(parse_l_paren<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::LParen { .. }) => x);
 pat!(parse_r_paren<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::RParen { .. }) => x);
-pat!(parse_semi_colon<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::SemiColon{ .. }) => x);
+pat!(parse_semi_colon<'a> : (usize, &'a Lexeme) => (usize, &'a Lexeme) = x @ (_, Lexeme::SemiColon { .. }) => x);
 
 
 #[cfg(test)]
