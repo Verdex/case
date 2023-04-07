@@ -49,6 +49,7 @@ pub enum IlData {
     Tuple(Vec<IlData>),
     List(Vec<IlData>),
     Pattern(IlPat),
+    Code(Vec<Il>),
 }
 
 #[derive(Debug)]
@@ -65,6 +66,7 @@ pub enum Il {
     TupleCons(usize),
     Match,
     Print,
+    Def,
 }
 
 #[derive(Debug)]

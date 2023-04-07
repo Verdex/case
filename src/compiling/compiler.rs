@@ -1,16 +1,20 @@
 
 use crate::data::*;
 
-pub fn compile(mut input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
-    if let Some(DefOrExpr::Expr(x)) = input.pop() {
-        let mut il = compile_expr(x)?;
-        il.push(Il::Print);
-        Ok(il)
-    }
-    else {
-        Ok(vec![])
-    }
+pub fn compile(input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
+    
+    let output = input.into_iter().map(|x| match x {
+        DefOrExpr::Expr(e) => compile_expr(e),
+        _ => panic!("!"),
+    }).collect::<Result<Vec<_>, _>>()?;
+
+    Ok(output.into_iter().flatten().collect())
+
 }
+
+/*fn compile_fn_def(input : FnDef) -> Result<Vec<Il>, CompileError> {
+
+}*/
 
 fn compile_expr(input : Expr) -> Result<Vec<Il>, CompileError> {
     match input { 
