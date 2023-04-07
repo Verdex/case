@@ -5,6 +5,7 @@ pub fn compile(input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
     
     let output = input.into_iter().map(|x| match x {
         DefOrExpr::Expr(e) => compile_expr(e),
+        DefOrExpr::FnDef(fd) => compile_fn_def(fd),
         _ => panic!("!"),
     }).collect::<Result<Vec<_>, _>>()?;
 
@@ -12,9 +13,13 @@ pub fn compile(input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
 
 }
 
-/*fn compile_fn_def(input : FnDef) -> Result<Vec<Il>, CompileError> {
-
-}*/
+fn compile_fn_def(input : FnDef) -> Result<Vec<Il>, CompileError> {
+    let expr = compile_expr(input.body)?;
+    Ok(vec![ Il::Push(IlData::Code(expr))
+           , Il::Push(IlData::String(input.name)) 
+           , Il::Def
+           ])
+}
 
 fn compile_expr(input : Expr) -> Result<Vec<Il>, CompileError> {
     match input { 

@@ -1,4 +1,6 @@
 
+use std::collections::HashMap;
+
 use crate::data::*;
 
 pub fn execute(mut il : Vec<Il>) {
@@ -19,6 +21,9 @@ pub fn execute(mut il : Vec<Il>) {
             Il::TupleCons(count) => {
                 let params = stack.drain((stack.len() - count)..).collect::<Vec<_>>();
                 stack.push(IlData::Tuple(params));
+            },
+            Il::Def => {
+                panic!("todo")
             },
             _ => panic!("!"),
         }
