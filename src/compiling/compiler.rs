@@ -24,9 +24,10 @@ fn compile_fn_def(input : FnDef) -> Result<Vec<Il>, CompileError> {
 
 fn compile_expr(input : Expr) -> Result<Vec<Il>, CompileError> {
     match input { 
-        Expr::Var { value, .. } => Ok(vec![]), // TODO
+        Expr::Var { value, .. } => todo!(), 
         Expr::Float { value, .. } => Ok(vec![Il::Push(IlData::Float(value))]),
         Expr::Symbol { value, .. } => Ok(vec![Il::Push(IlData::Symbol(value))]),
+        Expr::Call { .. } => todo!(),
         Expr::TupleCons { params, .. } => {
             let param_count = params.len();
             let mut params = params.into_iter()

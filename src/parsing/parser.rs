@@ -77,8 +77,7 @@ fn parse_expr<'a>(input : input!('a)) -> Result<Expr, ParseError> {
                  )
 }
 
-
-/*fn parse_call<'a>(input : input!('a)) -> Result<Expr, ParseError> {
+/*fn parse_expr_with_followers<'a>(input : input!('a)) -> Result<Expr, ParseError> {
 
 }*/
 
@@ -89,14 +88,30 @@ pat!(parse_symbol<'a> : (usize, &'a Lexeme) => Expr =
 pat!(parse_ident<'a> : (usize, &'a Lexeme) => (usize, String) = 
     (i, Lexeme::Symbol{ value, .. }) => (i, value.to_string()));
 pat!(parse_var<'a> : (usize, &'a Lexeme) => Expr = 
+    (i, Lexeme::Symbol{ value, .. }) => Expr::Var { value: value.to_string(), l_start: i, l_end: i });
     
-    
-fn parse_expr_comma<'a>(input : input!('a)) -> Result<Expr, ParseError> {
-    // TODO put start and stop data in return type?
+// TODO start and stop data
+fn parse_expr_list<'a>(input : input!('a)) -> Result<Vec<Expr>, ParseError> {
+    fn parse_expr_comma<'a>(input : input!('a)) -> Result<Expr, ParseError> {
+        // TODO put start and stop data in return type?
+        parser!(input => {
+            expr <= parse_expr;
+            comma <= parse_comma;
+            select expr
+        })
+    }
+
     parser!(input => {
-        expr <= parse_expr;
-        comma <= parse_comma;
-        select expr
+        exprs <= * parse_expr_comma;
+        maybe_last_expr <= ? parse_expr;
+        select {
+            let mut exprs = exprs;
+            match maybe_last_expr {
+                Some(last_expr) => { exprs.push(last_expr); },
+                _ => { },
+            }
+            exprs
+        }
     })
 }
 
@@ -104,15 +119,9 @@ fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
 
     parser!(input => {
         l_paren <= parse_l_paren;
-        exprs <= * parse_expr_comma;
-        maybe_last_expr <= ? parse_expr;
+        exprs <= parse_expr_list;
         r_paren <= parse_r_paren;
         select {
-            let mut exprs = exprs;
-            match maybe_last_expr {
-                Some(last_expr) => { exprs.push(last_expr); },
-                _ => { },
-            }
 
             // TODO start and end
             Expr::TupleCons { params: exprs, l_start: l_paren.0, l_end: r_paren.0 }
