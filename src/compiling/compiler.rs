@@ -14,6 +14,7 @@ pub fn compile(input : Vec<DefOrExpr>) -> Result<Vec<Il>, CompileError>  {
 }
 
 fn compile_fn_def(input : FnDef) -> Result<Vec<Il>, CompileError> {
+    // TODO need to handle parameters
     let expr = compile_expr(input.body)?;
     Ok(vec![ Il::Push(IlData::Code(expr))
            , Il::Push(IlData::String(input.name)) 

@@ -89,17 +89,18 @@ pat!(parse_symbol<'a> : (usize, &'a Lexeme) => Expr =
 pat!(parse_ident<'a> : (usize, &'a Lexeme) => (usize, String) = 
     (i, Lexeme::Symbol{ value, .. }) => (i, value.to_string()));
 pat!(parse_var<'a> : (usize, &'a Lexeme) => Expr = 
-    (i, Lexeme::Symbol{ value, .. }) => Expr::Var { value: value.to_string(), l_start: i, l_end: i });
+    
+    
+fn parse_expr_comma<'a>(input : input!('a)) -> Result<Expr, ParseError> {
+    // TODO put start and stop data in return type?
+    parser!(input => {
+        expr <= parse_expr;
+        comma <= parse_comma;
+        select expr
+    })
+}
 
 fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
-    fn parse_expr_comma<'a>(input : input!('a)) -> Result<Expr, ParseError> {
-        // TODO put start and stop data in return type?
-        parser!(input => {
-            expr <= parse_expr;
-            comma <= parse_comma;
-            select expr
-        })
-    }
 
     parser!(input => {
         l_paren <= parse_l_paren;
@@ -113,6 +114,7 @@ fn parse_tuple_cons<'a>(input : input!('a)) -> Result<Expr, ParseError> {
                 _ => { },
             }
 
+            // TODO start and end
             Expr::TupleCons { params: exprs, l_start: l_paren.0, l_end: r_paren.0 }
         }
     })
