@@ -77,9 +77,32 @@ fn parse_expr<'a>(input : input!('a)) -> Result<Expr, ParseError> {
                  )
 }
 
-/*fn parse_expr_with_followers<'a>(input : input!('a)) -> Result<Expr, ParseError> {
-
-}*/
+fn parse_expr_with_followers<'a>(input : input!('a)) -> Result<Expr, ParseError> {
+    enum Follower {
+        ParamList(Vec<Expr>)
+    }
+    fn parse_params_list<'a>(input : input!('a)) -> Result<Follower, ParseError> {
+        parser!(input => {
+            _l_paren <= parse_l_paren;
+            exprs <= parse_expr_list;
+            _r_paren <= parse_r_paren;
+            select Follower::ParamList(exprs)
+        })
+    }
+    fn parse_follower<'a>(input : input!('a)) -> Result<Follower, ParseError> {
+        alt!(input => parse_params_list)
+    }
+    parser!(input => {
+        fn_expr <= parse_expr;
+        followers <= * parse_follower;
+        select {
+            followers.into_iter().fold(fn_expr, |prev, f| match f {
+                // TODO start and end
+                Follower::ParamList(params) => Expr::Call { fn_expr: Box::new(prev), params, l_start: 0, l_end: 0 },
+            })
+        }
+    })
+}
 
 pat!(parse_float<'a> : (usize, &'a Lexeme) => Expr = 
     (i, Lexeme::Float { value, .. }) => Expr::Float { value: *value, l_start: i, l_end: i });
