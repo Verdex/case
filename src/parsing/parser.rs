@@ -11,7 +11,7 @@ macro_rules! input {
 pub fn parse<'a>(input : input!('a)) -> Result<Vec<DefOrExpr>, ParseError> {
     fn w_parse_expr<'a>(input : input!('a)) -> Result<DefOrExpr, ParseError> {
         parser!(input => {
-            expr <= parse_expr;
+            expr <= parse_expr_with_followers;
             select DefOrExpr::Expr(expr)
         })
     }
