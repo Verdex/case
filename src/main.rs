@@ -4,6 +4,8 @@ mod parsing;
 mod compiling;
 mod vm;
 
+use crate::data::*;
+
 fn main() {
     use std::io::{stdout, stdin, Write};
 
@@ -20,7 +22,14 @@ fn main() {
         let lexemes = parsing::lexer::lex(&mut input).unwrap();
         let mut lexemes = lexemes.iter().enumerate();
         let ast = parsing::parser::parse(&mut lexemes).unwrap();
-        let il = compiling::compiler::compile(ast).unwrap();
-        vm::execute(il);
+        let mut il = compiling::compiler::compile(ast).unwrap();
+        // TODO nope
+        il.push(Il::Exit);
+        let exe_env = vm::execute(il);
+
+        println!("exe_env:");
+        // TODO this could be better
+        println!("data stack:\n {:?}", exe_env.data_stack);
+        println!("def stack:\n {:?}", exe_env.def_stack);
     } 
 }

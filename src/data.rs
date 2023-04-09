@@ -1,4 +1,6 @@
 
+use std::collections::HashMap;
+
 #[derive(Debug)]
 pub enum Lexeme {
     LParen { index : usize },
@@ -41,7 +43,7 @@ pub enum Pat {
     Tuple { params : Vec<Pat>, l_start : usize, l_end : usize },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum IlData {
     Float(f64),
     Symbol(String),
@@ -52,7 +54,7 @@ pub enum IlData {
     Code(Vec<Il>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum IlPat {
     Float(f64),
     Symbol(String),
@@ -60,13 +62,19 @@ pub enum IlPat {
     Tuple(Vec<IlPat>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Il {
     Push(IlData),
     TupleCons(usize),
     Match,
-    Print,
     Def,
+    Exit,
+}
+
+#[derive(Debug)] 
+pub struct ExeEnv {
+    pub data_stack : Vec<IlData>,
+    pub def_stack : Vec<HashMap<String, IlData>>,
 }
 
 #[derive(Debug)]
