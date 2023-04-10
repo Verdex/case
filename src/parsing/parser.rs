@@ -11,7 +11,7 @@ macro_rules! input {
 pub fn parse<'a>(input : input!('a)) -> Result<Vec<DefOrExpr>, ParseError> {
     fn w_parse_expr<'a>(input : input!('a)) -> Result<DefOrExpr, ParseError> {
         parser!(input => {
-            expr <= parse_expr_with_followers;
+            expr <= parse_expr;
             select DefOrExpr::Expr(expr)
         })
     }
@@ -70,14 +70,13 @@ fn parse_fn_def<'a>(input : input!('a)) -> Result<FnDef, ParseError> {
 }
 
 fn parse_expr<'a>(input : input!('a)) -> Result<Expr, ParseError> {
-    alt!( input => parse_float
-                 ; parse_symbol
-                 ; parse_tuple_cons 
-                 ; parse_var
-                 )
-}
-
-fn parse_expr_with_followers<'a>(input : input!('a)) -> Result<Expr, ParseError> {
+    fn parse_leading_expr<'a>(input : input!('a)) -> Result<Expr, ParseError> {
+        alt!( input => parse_float
+                    ; parse_symbol
+                    ; parse_tuple_cons 
+                    ; parse_var
+                    )
+    }
     enum Follower {
         ParamList(Vec<Expr>)
     }
@@ -93,7 +92,7 @@ fn parse_expr_with_followers<'a>(input : input!('a)) -> Result<Expr, ParseError>
         alt!(input => parse_params_list)
     }
     parser!(input => {
-        fn_expr <= parse_expr;
+        fn_expr <= parse_leading_expr;
         followers <= * parse_follower;
         select {
             followers.into_iter().fold(fn_expr, |prev, f| match f {
