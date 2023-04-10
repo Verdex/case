@@ -168,6 +168,72 @@ mod test {
     fn unbox<'a, T>(input : &'a Box<T> ) -> &'a T { &**input }
 
     #[test]
+    fn parse_should_call_following_call() {
+        let input = "x(1, 2, 3)(4, 5, 6)";
+        let mut input = input.char_indices();
+        let ls = lex(&mut input).unwrap();
+        let mut ls = ls.iter().enumerate();
+        let output = parse(&mut ls).unwrap();
+
+        let mut matched = false;
+        atom!( output => [ref x] x
+                       ; slice $ [[ DefOrExpr::Expr(expr) ]] expr 
+                       ; [ Expr::Call { fn_expr: outer_fn_expr, params: outer_params, .. } ] outer_fn_expr
+                       ; unbox $ [ Expr::Call { fn_expr: inner_fn_expr, params: inner_params, .. } ] inner_fn_expr
+                       ; unbox $ [ Expr::Var { value, .. } ]
+                       => { 
+                        assert_eq!(value, "x");
+                        assert_eq!(inner_params.len(), 3);
+                        assert!( matches!(inner_params[0], Expr::Float{ value: 1.0, .. }) );
+                        assert!( matches!(inner_params[1], Expr::Float{ value: 2.0, .. }) );
+                        assert!( matches!(inner_params[2], Expr::Float{ value: 3.0, .. }) );
+                        assert_eq!(outer_params.len(), 3);
+                        assert!( matches!(outer_params[0], Expr::Float{ value: 4.0, .. }) );
+                        assert!( matches!(outer_params[1], Expr::Float{ value: 5.0, .. }) );
+                        assert!( matches!(outer_params[2], Expr::Float{ value: 6.0, .. }) );
+
+                        matched = true; 
+                    } );
+
+        assert!(matched);
+    }
+
+    #[test]
+    fn parse_should_parse_call_with_inner_calls() {
+        let input = "x(y(), 2, 3)";
+        let mut input = input.char_indices();
+        let ls = lex(&mut input).unwrap();
+        let mut ls = ls.iter().enumerate();
+        let output = parse(&mut ls).unwrap();
+
+        let mut matched = false;
+        atom!( output => [ref x] x
+                       ; slice $ [[ DefOrExpr::Expr(expr) ]] expr 
+                       ; [ Expr::Call { fn_expr, params, .. } ] fn_expr
+                       ; unbox $ [ Expr::Var { value, .. } ]
+                       => { 
+                        assert_eq!(value, "x");
+                        assert_eq!(params.len(), 3);
+
+                        assert!( matches!(params[1], Expr::Float{ value: 2.0, .. }) );
+                        assert!( matches!(params[2], Expr::Float{ value: 3.0, .. }) );
+
+                        let inner = &params[0];
+
+                        atom!(inner => [ Expr::Call { fn_expr, params, ..} ] fn_expr 
+                                          ; unbox $ [ Expr::Var { value, .. } ]
+                                         => {
+                            assert_eq!( value, "y" );
+                            assert_eq!( params.len(), 0 );
+
+                            matched = true;
+                        } );
+                    } );
+
+        assert!(matched);
+    }
+    
+    #[test]
     fn parse_should_parse_call() {
         let input = "x(1, 2, 3)";
         let mut input = input.char_indices();
